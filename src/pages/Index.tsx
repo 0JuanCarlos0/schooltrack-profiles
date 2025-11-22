@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Users, Shield, BookOpen } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -14,72 +15,86 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
+  const newsItems = [
+    {
+      title: "Bienvenidos a SchoolTrack UTSJR",
+      date: "11 de noviembre de 2025",
+      description: "Sistema de seguimiento en tiempo real para transporte escolar de UTSJR"
+    },
+    {
+      title: "Seguridad en el Transporte Escolar",
+      date: "11 de noviembre de 2025",
+      description: "Conoce las medidas de seguridad implementadas en el transporte"
+    },
+    {
+      title: "Nuevas Rutas Disponibles",
+      date: "11 de noviembre de 2025",
+      description: "Más opciones de transporte para la comunidad estudiantil"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-      <nav className="border-b bg-card/50 backdrop-blur-sm">
+    <div className="min-h-screen bg-gradient-to-b from-cyan-50 via-white to-cyan-50">
+      {/* Navbar */}
+      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
+            <div className="w-12 h-12 bg-cyan-500 rounded-2xl flex items-center justify-center">
+              <span className="text-white font-bold text-xl">ST</span>
             </div>
-            <h1 className="text-xl font-bold">SchoolTrack</h1>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">SchoolTrack</h1>
+              <p className="text-xs text-gray-600">UTSJR</p>
+            </div>
           </div>
-          <Button onClick={() => navigate('/auth')}>
-            Iniciar Sesión
-          </Button>
-        </div>
-      </nav>
-
-      <main className="container mx-auto px-4 py-16">
-        <div className="text-center max-w-4xl mx-auto mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-primary rounded-2xl mb-6">
-            <GraduationCap className="w-12 h-12 text-primary-foreground" />
-          </div>
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Bienvenido a SchoolTrack
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8">
-            Sistema completo de gestión escolar con autenticación segura y gestión de perfiles
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate('/auth')}>
-              Comenzar Ahora
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={() => navigate('/auth')}>
+              Iniciar Sesión
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/auth')}>
+            <Button onClick={() => navigate('/auth?mode=signup')}>
               Crear Cuenta
             </Button>
           </div>
         </div>
+      </nav>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <div className="text-center p-6">
-            <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Gestión de Estudiantes</h3>
-            <p className="text-muted-foreground">
-              Administra estudiantes, actualiza información y mantén registros organizados
-            </p>
-          </div>
+      {/* Hero Section */}
+      <main className="container mx-auto px-4 py-16">
+        <div className="text-center max-w-4xl mx-auto mb-20">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-cyan-500 leading-tight">
+            Seguimiento de Transporte Escolar en Tiempo Real
+          </h1>
+          <p className="text-xl text-gray-600 mb-4 font-medium">
+            Universidad Tecnológica de San Juan del Río
+          </p>
+          <p className="text-lg text-gray-600 mb-8 max-w-3xl mx-auto">
+            Monitorea la ubicación de las unidades de transporte en tiempo real, recibe notificaciones y mantente informado sobre las rutas de los estudiantes.
+          </p>
+          <Button size="lg" className="text-lg px-8" onClick={() => navigate('/auth?mode=signup')}>
+            Comenzar Ahora →
+          </Button>
+        </div>
 
-          <div className="text-center p-6">
-            <div className="w-16 h-16 bg-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-secondary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Perfiles con Fotos</h3>
-            <p className="text-muted-foreground">
-              Sube, cambia y elimina fotos de perfil con almacenamiento seguro en servidor
-            </p>
-          </div>
-
-          <div className="text-center p-6">
-            <div className="w-16 h-16 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="w-8 h-8 text-accent" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">CRUD Completo</h3>
-            <p className="text-muted-foreground">
-              Crea, lee, actualiza y elimina registros con interfaz intuitiva
-            </p>
+        {/* News Section */}
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
+            Noticias y Actualizaciones
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {newsItems.map((item, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-xl">{item.title}</CardTitle>
+                  <CardDescription className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {item.date}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </main>
