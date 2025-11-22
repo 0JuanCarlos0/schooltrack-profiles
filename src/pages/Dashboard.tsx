@@ -1,27 +1,66 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraduationCap, Users, LogOut, User } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AdminDashboard from '@/components/dashboard/AdminDashboard';
+import StudentDashboard from '@/components/dashboard/StudentDashboard';
+import ParentDashboard from '@/components/dashboard/ParentDashboard';
+import DriverDashboard from '@/components/dashboard/DriverDashboard';
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, userRole, signOut } = useAuth();
   const navigate = useNavigate();
 
+  const renderDashboard = () => {
+    switch (userRole) {
+      case 'admin':
+        return <AdminDashboard />;
+      case 'student':
+        return <StudentDashboard />;
+      case 'parent':
+        return <ParentDashboard />;
+      case 'driver':
+        return <DriverDashboard />;
+      default:
+        return (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Rol no asignado</h2>
+            <p className="text-gray-600 mb-6">
+              No tienes un rol asignado en el sistema. Contacta al administrador.
+            </p>
+          </div>
+        );
+    }
+  };
+
+  const getRoleLabel = () => {
+    const roles: Record<string, string> = {
+      admin: 'Administrador',
+      student: 'Estudiante',
+      parent: 'Padre/Madre',
+      driver: 'Conductor'
+    };
+    return roles[userRole || ''] || 'Sin rol';
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <nav className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-gradient-to-b from-cyan-50 via-white to-cyan-50">
+      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">ST</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold">SchoolTrack</h1>
-              <p className="text-xs text-muted-foreground">Panel de Control</p>
+              <h1 className="text-xl font-bold text-gray-900">SchoolTrack UTSJR</h1>
+              <p className="text-xs text-gray-600">Sistema de Transporte Escolar</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <div className="text-right mr-4">
+              <p className="text-sm font-medium text-gray-900">{user?.email}</p>
+              <p className="text-xs text-gray-600">{getRoleLabel()}</p>
+            </div>
             <Button variant="outline" onClick={() => navigate('/profile')}>
               <User className="w-4 h-4 mr-2" />
               Mi Perfil
@@ -35,50 +74,7 @@ const Dashboard = () => {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">
-            Bienvenido, {user?.email}
-          </h2>
-          <p className="text-muted-foreground">
-            Gestiona estudiantes y perfiles desde un solo lugar
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/students')}>
-            <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-primary" />
-              </div>
-              <CardTitle>Gestión de Estudiantes</CardTitle>
-              <CardDescription>
-                Administra el registro de estudiantes, actualiza información y mantén todo organizado
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">
-                Ir a Estudiantes
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/profile')}>
-            <CardHeader>
-              <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center mb-4">
-                <User className="w-6 h-6 text-secondary" />
-              </div>
-              <CardTitle>Mi Perfil</CardTitle>
-              <CardDescription>
-                Actualiza tu información personal, cambia tu foto de perfil y gestiona tu cuenta
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="secondary" className="w-full">
-                Ver Perfil
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        {renderDashboard()}
       </div>
     </div>
   );

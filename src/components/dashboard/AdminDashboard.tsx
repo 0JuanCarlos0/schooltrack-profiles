@@ -1,0 +1,139 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, Car, Route, UserCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+
+  const stats = [
+    {
+      title: "Total Estudiantes",
+      value: "0",
+      icon: Users,
+      description: "Estudiantes registrados",
+      color: "text-cyan-500",
+      bgColor: "bg-cyan-50",
+      route: "/students"
+    },
+    {
+      title: "Vehículos Activos",
+      value: "0",
+      icon: Car,
+      description: "Unidades en servicio",
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
+      route: "/vehicles"
+    },
+    {
+      title: "Rutas Activas",
+      value: "0",
+      icon: Route,
+      description: "Rutas operativas",
+      color: "text-green-500",
+      bgColor: "bg-green-50",
+      route: "/routes"
+    },
+    {
+      title: "Conductores",
+      value: "0",
+      icon: UserCheck,
+      description: "Conductores asignados",
+      color: "text-purple-500",
+      bgColor: "bg-purple-50",
+      route: "/drivers"
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-900">Panel de Administración</h2>
+        <p className="text-gray-600 mt-2">Gestiona todo el sistema de transporte escolar</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <Card 
+            key={index} 
+            className="hover:shadow-lg transition-all cursor-pointer border-l-4 hover:scale-105"
+            style={{ borderLeftColor: stat.color.replace('text-', '') }}
+            onClick={() => navigate(stat.route)}
+          >
+            <CardHeader className="pb-2">
+              <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center mb-2`}>
+                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+              </div>
+              <CardTitle className="text-2xl font-bold">{stat.value}</CardTitle>
+              <CardDescription className="font-medium">{stat.title}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">{stat.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Acciones Rápidas</CardTitle>
+            <CardDescription>Operaciones frecuentes del administrador</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <button 
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-cyan-50 transition-colors border border-gray-200"
+              onClick={() => navigate('/students')}
+            >
+              <div className="flex items-center gap-3">
+                <Users className="w-5 h-5 text-cyan-500" />
+                <div>
+                  <p className="font-medium">Gestionar Estudiantes</p>
+                  <p className="text-sm text-gray-600">Agregar, editar o eliminar estudiantes</p>
+                </div>
+              </div>
+            </button>
+            <button 
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition-colors border border-gray-200"
+              onClick={() => navigate('/vehicles')}
+            >
+              <div className="flex items-center gap-3">
+                <Car className="w-5 h-5 text-blue-500" />
+                <div>
+                  <p className="font-medium">Gestionar Vehículos</p>
+                  <p className="text-sm text-gray-600">Administrar unidades de transporte</p>
+                </div>
+              </div>
+            </button>
+            <button 
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-green-50 transition-colors border border-gray-200"
+              onClick={() => navigate('/routes')}
+            >
+              <div className="flex items-center gap-3">
+                <Route className="w-5 h-5 text-green-500" />
+                <div>
+                  <p className="font-medium">Gestionar Rutas</p>
+                  <p className="text-sm text-gray-600">Configurar rutas y horarios</p>
+                </div>
+              </div>
+            </button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Actividad Reciente</CardTitle>
+            <CardDescription>Últimas acciones en el sistema</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-gray-500">
+              <p>No hay actividad reciente</p>
+              <p className="text-sm mt-1">Las acciones aparecerán aquí</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
