@@ -44,6 +44,89 @@ export type Database = {
         }
         Relationships: []
       }
+      routes: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_time: string
+          id: string
+          name: string
+          start_time: string
+          status: string | null
+          updated_at: string | null
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          name: string
+          start_time: string
+          status?: string | null
+          updated_at?: string | null
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          name?: string
+          start_time?: string
+          status?: string | null
+          updated_at?: string | null
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routes_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_routes: {
+        Row: {
+          created_at: string | null
+          id: string
+          pickup_location: string | null
+          route_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          pickup_location?: string | null
+          route_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          pickup_location?: string | null
+          route_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_routes_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_routes_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           address: string | null
@@ -106,15 +189,87 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          capacity: number
+          created_at: string | null
+          driver_id: string | null
+          id: string
+          plate_number: string
+          status: string | null
+          updated_at: string | null
+          vehicle_number: string
+        }
+        Insert: {
+          capacity: number
+          created_at?: string | null
+          driver_id?: string | null
+          id?: string
+          plate_number: string
+          status?: string | null
+          updated_at?: string | null
+          vehicle_number: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string | null
+          driver_id?: string | null
+          id?: string
+          plate_number?: string
+          status?: string | null
+          updated_at?: string | null
+          vehicle_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "student" | "parent" | "driver"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -241,6 +396,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "student", "parent", "driver"],
+    },
   },
 } as const
