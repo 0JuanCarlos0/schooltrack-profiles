@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 
 const Auth = () => {
@@ -15,6 +16,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<'student' | 'parent' | 'driver'>('student');
   const [loading, setLoading] = useState(false);
 
   const isSignupMode = searchParams.get('mode') === 'signup';
@@ -52,7 +54,7 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      await signUp(email, password, fullName);
+      await signUp(email, password, fullName, role);
     } catch (error: any) {
       console.error('Error al crear cuenta:', error);
     } finally {
@@ -122,17 +124,43 @@ const Auth = () => {
               </div>
 
               {isSignupMode && (
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Repite tu contraseña"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Repite tu contraseña"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Tipo de Usuario</Label>
+                    <RadioGroup value={role} onValueChange={(value: any) => setRole(value)}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="student" id="student" />
+                        <Label htmlFor="student" className="font-normal cursor-pointer">
+                          Estudiante
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="parent" id="parent" />
+                        <Label htmlFor="parent" className="font-normal cursor-pointer">
+                          Padre/Tutor
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="driver" id="driver" />
+                        <Label htmlFor="driver" className="font-normal cursor-pointer">
+                          Conductor
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </>
               )}
 
               <Button type="submit" className="w-full" disabled={loading}>
@@ -151,6 +179,7 @@ const Auth = () => {
                   setPassword('');
                   setConfirmPassword('');
                   setFullName('');
+                  setRole('student');
                   navigate(isSignupMode ? '/auth' : '/auth?mode=signup');
                 }}
               >

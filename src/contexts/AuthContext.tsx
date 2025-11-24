@@ -12,7 +12,7 @@ interface AuthContextType {
   userRole: UserRole;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, role: 'student' | 'parent' | 'driver') => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -85,10 +85,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     navigate('/dashboard');
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, role: 'student' | 'parent' | 'driver') => {
     const redirectUrl = `${window.location.origin}/dashboard`;
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -102,6 +102,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) {
       toast.error(error.message);
       throw error;
+    }
+
+    if (data.user) {
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: data.user.id,
+          role: role,
+        });
+
+      if (roleError) {
+        console.error('Error al asignar rol:', roleError);
+        toast.error('Cuenta creada pero hubo un problema al asignar el rol');
+      }
     }
 
     toast.success('¡Cuenta creada! Iniciando sesión...');
