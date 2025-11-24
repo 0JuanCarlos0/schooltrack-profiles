@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-type UserRole = 'admin' | 'student' | 'parent' | 'driver' | null;
+type UserRole = 'admin' | 'student' | 'parent' | 'driver' | 'user' | null;
 
 interface AuthContextType {
   user: User | null;
@@ -12,7 +12,7 @@ interface AuthContextType {
   userRole: UserRole;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string, role: 'student' | 'parent' | 'driver') => Promise<void>;
+  signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     navigate('/dashboard');
   };
 
-  const signUp = async (email: string, password: string, fullName: string, role: 'student' | 'parent' | 'driver') => {
+  const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
 
     const { data, error } = await supabase.auth.signUp({
@@ -105,11 +105,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (data.user) {
+      // Todos los nuevos usuarios se registran como 'user' por defecto
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
           user_id: data.user.id,
-          role: role,
+          role: 'user',
         });
 
       if (roleError) {
