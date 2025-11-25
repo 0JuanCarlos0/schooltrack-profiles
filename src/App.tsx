@@ -13,6 +13,7 @@ import Vehicles from "./pages/Vehicles";
 import RoutesPage from "./pages/Routes";
 import Drivers from "./pages/Drivers";
 import Profile from "./pages/Profile";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +73,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <Users />
                 </ProtectedRoute>
               }
             />
