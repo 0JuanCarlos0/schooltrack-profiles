@@ -1,11 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Car, Route, UserCheck } from 'lucide-react';
+import { Users, Car, Route, UserCheck, UserCog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
   const stats = [
+    {
+      title: "Usuarios",
+      value: "0",
+      icon: UserCog,
+      description: "Gestión de usuarios",
+      color: "text-orange-500",
+      bgColor: "bg-orange-50",
+      route: "/users"
+    },
     {
       title: "Total Estudiantes",
       value: "0",
@@ -51,7 +60,7 @@ const AdminDashboard = () => {
         <p className="text-gray-600 mt-2">Gestiona todo el sistema de transporte escolar</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {stats.map((stat, index) => (
           <Card 
             key={index} 
@@ -81,38 +90,50 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent className="space-y-2">
             <button 
-              className="w-full text-left px-4 py-3 rounded-lg hover:bg-cyan-50 transition-colors border border-gray-200"
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-orange-50 transition-colors border border-border"
+              onClick={() => navigate('/users')}
+            >
+              <div className="flex items-center gap-3">
+                <UserCog className="w-5 h-5 text-orange-500" />
+                <div>
+                  <p className="font-medium">Gestionar Usuarios</p>
+                  <p className="text-sm text-muted-foreground">Administrar usuarios y roles</p>
+                </div>
+              </div>
+            </button>
+            <button 
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-cyan-50 transition-colors border border-border"
               onClick={() => navigate('/students')}
             >
               <div className="flex items-center gap-3">
                 <Users className="w-5 h-5 text-cyan-500" />
                 <div>
                   <p className="font-medium">Gestionar Estudiantes</p>
-                  <p className="text-sm text-gray-600">Agregar, editar o eliminar estudiantes</p>
+                  <p className="text-sm text-muted-foreground">Agregar, editar o eliminar estudiantes</p>
                 </div>
               </div>
             </button>
             <button 
-              className="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition-colors border border-gray-200"
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition-colors border border-border"
               onClick={() => navigate('/vehicles')}
             >
               <div className="flex items-center gap-3">
                 <Car className="w-5 h-5 text-blue-500" />
                 <div>
                   <p className="font-medium">Gestionar Vehículos</p>
-                  <p className="text-sm text-gray-600">Administrar unidades de transporte</p>
+                  <p className="text-sm text-muted-foreground">Administrar unidades de transporte</p>
                 </div>
               </div>
             </button>
             <button 
-              className="w-full text-left px-4 py-3 rounded-lg hover:bg-green-50 transition-colors border border-gray-200"
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-green-50 transition-colors border border-border"
               onClick={() => navigate('/routes')}
             >
               <div className="flex items-center gap-3">
                 <Route className="w-5 h-5 text-green-500" />
                 <div>
                   <p className="font-medium">Gestionar Rutas</p>
-                  <p className="text-sm text-gray-600">Configurar rutas y horarios</p>
+                  <p className="text-sm text-muted-foreground">Configurar rutas y horarios</p>
                 </div>
               </div>
             </button>

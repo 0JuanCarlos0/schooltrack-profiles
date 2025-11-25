@@ -4,17 +4,20 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: 'admin' | 'student' | 'parent' | 'driver' | 'user';
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
+  const { user, userRole, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
+    } else if (!loading && user && requiredRole && userRole !== requiredRole) {
+      navigate('/dashboard');
     }
-  }, [user, loading, navigate]);
+  }, [user, userRole, loading, navigate, requiredRole]);
 
   if (loading) {
     return (
@@ -25,6 +28,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    return null;
+  }
+
+  if (requiredRole && userRole !== requiredRole) {
     return null;
   }
 
