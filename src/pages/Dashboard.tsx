@@ -6,6 +6,7 @@ import AdminDashboard from '@/components/dashboard/AdminDashboard';
 import StudentDashboard from '@/components/dashboard/StudentDashboard';
 import ParentDashboard from '@/components/dashboard/ParentDashboard';
 import DriverDashboard from '@/components/dashboard/DriverDashboard';
+import UserDashboard from '@/components/dashboard/UserDashboard';
 
 const Dashboard = () => {
   const { user, userRole, signOut } = useAuth();
@@ -21,15 +22,10 @@ const Dashboard = () => {
         return <ParentDashboard />;
       case 'driver':
         return <DriverDashboard />;
+      case 'user':
+        return <UserDashboard />;
       default:
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Rol no asignado</h2>
-            <p className="text-gray-600 mb-6">
-              No tienes un rol asignado en el sistema. Contacta al administrador.
-            </p>
-          </div>
-        );
+        return <UserDashboard />;
     }
   };
 
@@ -38,9 +34,10 @@ const Dashboard = () => {
       admin: 'Administrador',
       student: 'Estudiante',
       parent: 'Padre/Madre',
-      driver: 'Conductor'
+      driver: 'Conductor',
+      user: 'Usuario'
     };
-    return roles[userRole || ''] || 'Sin rol';
+    return roles[userRole || ''] || 'Usuario';
   };
 
   return (

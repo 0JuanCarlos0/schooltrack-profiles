@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Car, Route, UserCheck, UserCog } from 'lucide-react';
+import { Users, Car, Route, UserCheck, UserCog, Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -50,6 +50,15 @@ const AdminDashboard = () => {
       color: "text-purple-500",
       bgColor: "bg-purple-50",
       route: "/drivers"
+    },
+    {
+      title: "Ubicaciones",
+      value: "0",
+      icon: Navigation,
+      description: "Monitor en tiempo real",
+      color: "text-red-500",
+      bgColor: "bg-red-50",
+      route: "/admin/locations"
     }
   ];
 
@@ -60,7 +69,7 @@ const AdminDashboard = () => {
         <p className="text-gray-600 mt-2">Gestiona todo el sistema de transporte escolar</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
         {stats.map((stat, index) => (
           <Card 
             key={index} 
