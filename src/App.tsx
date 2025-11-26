@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes as RouterRoutes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -14,6 +14,8 @@ import RoutesPage from "./pages/Routes";
 import Drivers from "./pages/Drivers";
 import Profile from "./pages/Profile";
 import Users from "./pages/Users";
+import LocationTracking from "./pages/LocationTracking";
+import AdminLocations from "./pages/AdminLocations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -81,6 +83,22 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <Users />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/location"
+              element={
+                <ProtectedRoute>
+                  <LocationTracking />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/locations"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLocations />
                 </ProtectedRoute>
               }
             />
