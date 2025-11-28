@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,10 +27,18 @@ interface Driver {
   email: string;
 }
 
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string | null;
+}
+
 const Vehicles = () => {
   const navigate = useNavigate();
+  const { userRole } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -45,7 +54,26 @@ const Vehicles = () => {
   useEffect(() => {
     loadVehicles();
     loadDrivers();
+    loadAvailableUsers();
   }, []);
+
+  const loadAvailableUsers = async () => {
+    // Cargar usuarios con rol 'driver' o 'user'
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('user_id, role')
+      .in('role', ['driver', 'user']);
+
+    if (roles) {
+      const userIds = roles.map(r => r.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', userIds);
+      
+      setAvailableUsers(profiles || []);
+    }
+  };
 
   const loadVehicles = async () => {
     try {
@@ -247,11 +275,21 @@ const Vehicles = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Sin asignar</SelectItem>
-                        {drivers.map((driver) => (
-                          <SelectItem key={driver.id} value={driver.id}>
-                            {driver.full_name || driver.email}
-                          </SelectItem>
-                        ))}
+                        {userRole === 'admin' ? (
+                          // Admin puede ver todos los usuarios disponibles
+                          availableUsers.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.full_name || user.email}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          // Otros solo ven conductores oficiales
+                          drivers.map((driver) => (
+                            <SelectItem key={driver.id} value={driver.id}>
+                              {driver.full_name || driver.email}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>

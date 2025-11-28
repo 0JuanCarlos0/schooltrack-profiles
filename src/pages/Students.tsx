@@ -25,12 +25,20 @@ interface Student {
   emergency_phone: string | null;
   enrollment_date: string;
   status: string;
+  user_id: string | null;
+}
+
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string | null;
 }
 
 const Students = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -48,11 +56,31 @@ const Students = () => {
     emergency_contact: '',
     emergency_phone: '',
     status: 'active',
+    user_id: '',
   });
 
   useEffect(() => {
     loadStudents();
+    loadAvailableUsers();
   }, []);
+
+  const loadAvailableUsers = async () => {
+    // Cargar usuarios con rol 'student' o 'user'
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('user_id, role')
+      .in('role', ['student', 'user']);
+
+    if (roles) {
+      const userIds = roles.map(r => r.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', userIds);
+      
+      setAvailableUsers(profiles || []);
+    }
+  };
 
   const loadStudents = async () => {
     const { data, error } = await supabase
@@ -80,6 +108,7 @@ const Students = () => {
       emergency_contact: '',
       emergency_phone: '',
       status: 'active',
+      user_id: '',
     });
     setEditingStudent(null);
   };
@@ -89,11 +118,16 @@ const Students = () => {
     setLoading(true);
 
     try {
+      const submitData = {
+        ...formData,
+        user_id: formData.user_id || null,
+      };
+
       if (editingStudent) {
         // Actualizar estudiante
         const { error } = await supabase
           .from('students')
-          .update(formData)
+          .update(submitData)
           .eq('id', editingStudent.id);
 
         if (error) throw error;
@@ -102,7 +136,7 @@ const Students = () => {
         // Crear estudiante
         const { error } = await supabase
           .from('students')
-          .insert([{ ...formData, user_id: user?.id }]);
+          .insert([submitData]);
 
         if (error) throw error;
         toast.success('Estudiante creado correctamente');
@@ -131,6 +165,7 @@ const Students = () => {
       emergency_contact: student.emergency_contact || '',
       emergency_phone: student.emergency_phone || '',
       status: student.status,
+      user_id: student.user_id || '',
     });
     setDialogOpen(true);
   };
@@ -287,14 +322,6 @@ const Students = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="emergency_contact">Contacto de Emergencia</Label>
-                        <Input
-                          id="emergency_contact"
-                          value={formData.emergency_contact}
-                          onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
                         <Label htmlFor="emergency_phone">Teléfono de Emergencia</Label>
                         <Input
                           id="emergency_phone"
@@ -303,6 +330,27 @@ const Students = () => {
                           onChange={(e) => setFormData({ ...formData, emergency_phone: e.target.value })}
                         />
                       </div>
+                      {userRole === 'admin' && (
+                        <div className="space-y-2">
+                          <Label htmlFor="user_id">Usuario Asociado</Label>
+                          <Select
+                            value={formData.user_id}
+                            onValueChange={(value) => setFormData({ ...formData, user_id: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sin usuario" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Sin usuario</SelectItem>
+                              {availableUsers.map((user) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                  {user.full_name || user.email}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2 justify-end pt-4">
