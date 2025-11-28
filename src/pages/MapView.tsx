@@ -68,17 +68,21 @@ const MapView = () => {
 
       if (locationError) throw locationError;
 
-      // Obtener información de usuarios
+      // Obtener información de usuarios (excluyendo admins)
       const userIds = [...new Set(locationData?.map(l => l.user_id) || [])];
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, full_name, email')
-        .in('id', userIds);
+        .select('id, full_name, email, role')
+        .in('id', userIds)
+        .neq('role', 'admin'); // Excluir administradores
 
       if (profileError) throw profileError;
 
       // Combinar datos y filtrar última ubicación por usuario
-      const locationsWithUsers = locationData?.map(loc => {
+      const locationsWithUsers = locationData?.filter(loc => {
+        const profile = profileData?.find(p => p.id === loc.user_id);
+        return profile && profile.role !== 'admin'; // Asegurar que no sean admins
+      }).map(loc => {
         const profile = profileData?.find(p => p.id === loc.user_id);
         return {
           ...loc,
@@ -127,13 +131,11 @@ const MapView = () => {
     return location.user_name || location.user_email || 'Usuario';
   };
 
-  // Ruta de ejemplo para simulación (San Juan del Río)
-  const sampleRoute: [number, number][] = [
-    [20.3883, -99.9830],
-    [20.3900, -99.9850],
-    [20.3920, -99.9870],
-    [20.3940, -99.9890],
-    [20.3960, -99.9910]
+  // Datos de vehículos simulados
+  const simulatedVehicles = [
+    { name: 'BUS-001 - Ruta Centro', color: '#3B82F6', status: 'En ruta' },
+    { name: 'BUS-002 - Ruta Norte', color: '#10B981', status: 'En ruta' },
+    { name: 'BUS-003 - Ruta Sur', color: '#F59E0B', status: 'En ruta' }
   ];
 
   return (
@@ -163,23 +165,21 @@ const MapView = () => {
               <CardContent>
                 {loading ? (
                   <p className="text-gray-500">Cargando...</p>
-                ) : locations.length === 0 ? (
-                  <p className="text-gray-500">No hay ubicaciones activas</p>
                 ) : (
                   <div className="space-y-3">
-                    {locations.map((location) => (
-                      <div key={location.id} className="p-3 bg-gray-50 rounded-lg">
+                    {simulatedVehicles.map((vehicle, index) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-lg border-l-4" style={{ borderLeftColor: vehicle.color }}>
                         <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 text-cyan-500 mt-1" />
+                          <MapPin className="w-4 h-4 mt-1" style={{ color: vehicle.color }} />
                           <div className="flex-1">
-                            <p className="font-medium text-sm">{getUserName(location)}</p>
+                            <p className="font-medium text-sm">{vehicle.name}</p>
                             <p className="text-xs text-gray-500">
-                              {new Date(location.timestamp).toLocaleTimeString('es-MX')}
+                              {new Date().toLocaleTimeString('es-MX')}
                             </p>
-                            <p className="text-xs text-gray-400">
-                              Lat: {location.latitude.toFixed(5)}, 
-                              Lng: {location.longitude.toFixed(5)}
-                            </p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                              <span className="text-xs text-green-600 font-medium">{vehicle.status}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -218,15 +218,9 @@ const MapView = () => {
           <div className="lg:col-span-2">
             <Card className="h-[600px] overflow-hidden">
               <CardContent className="p-0 h-full">
-                {!loading && (
-                  <LeafletMap
-                    locations={locations}
-                    center={center}
-                    sampleRoute={sampleRoute}
-                    getUserName={getUserName}
-                  />
-                )}
-                {loading && (
+                {!loading ? (
+                  <LeafletMap center={center} />
+                ) : (
                   <div className="h-full flex items-center justify-center bg-gray-50">
                     <p className="text-gray-500">Cargando mapa...</p>
                   </div>
