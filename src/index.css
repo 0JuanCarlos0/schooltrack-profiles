@@ -97,3 +97,23 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Leaflet map marker animations */
+.bus-marker {
+  transition: all 3s ease-in-out !important;
+}
+
+.bus-marker svg {
+  animation: pulse-vehicle 2s ease-in-out infinite;
+}
+
+@keyframes pulse-vehicle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.95;
+  }
+}
