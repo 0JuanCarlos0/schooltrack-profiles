@@ -131,11 +131,29 @@ const MapView = () => {
     return location.user_name || location.user_email || 'Usuario';
   };
 
-  // Datos de vehículos simulados
+  // Datos de vehículos simulados con horarios
   const simulatedVehicles = [
-    { name: 'BUS-001 - Ruta Centro', color: '#3B82F6', status: 'En ruta' },
-    { name: 'BUS-002 - Ruta Norte', color: '#10B981', status: 'En ruta' },
-    { name: 'BUS-003 - Ruta Sur', color: '#F59E0B', status: 'En ruta' }
+    { 
+      name: 'BUS-001 - Ruta Centro', 
+      color: '#3B82F6', 
+      status: 'En ruta',
+      speed: '40 km/h',
+      nextStop: 'UTSJR Campus'
+    },
+    { 
+      name: 'BUS-002 - Ruta Norte', 
+      color: '#10B981', 
+      status: 'En ruta',
+      speed: '40 km/h',
+      nextStop: 'Boulevard Principal'
+    },
+    { 
+      name: 'BUS-003 - Ruta Sur', 
+      color: '#F59E0B', 
+      status: 'En ruta',
+      speed: '40 km/h',
+      nextStop: 'Zona Comercial'
+    }
   ];
 
   return (
@@ -173,13 +191,19 @@ const MapView = () => {
                           <MapPin className="w-4 h-4 mt-1" style={{ color: vehicle.color }} />
                           <div className="flex-1">
                             <p className="font-medium text-sm">{vehicle.name}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 mt-1">
                               {new Date().toLocaleTimeString('es-MX')}
                             </p>
                             <div className="flex items-center gap-1 mt-1">
                               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                               <span className="text-xs text-green-600 font-medium">{vehicle.status}</span>
                             </div>
+                            <p className="text-xs text-gray-600 mt-1">
+                              🚌 {vehicle.speed}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              📍 Próxima: {vehicle.nextStop}
+                            </p>
                           </div>
                         </div>
                       </div>
