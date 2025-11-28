@@ -1,14 +1,84 @@
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Car, Route, UserCheck, UserCog, Navigation, Newspaper, Map } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [counts, setCounts] = useState({
+    users: 0,
+    students: 0,
+    vehicles: 0,
+    routes: 0,
+    drivers: 0,
+    locations: 0,
+    news: 0
+  });
+
+  useEffect(() => {
+    loadCounts();
+  }, []);
+
+  const loadCounts = async () => {
+    try {
+      // Contar usuarios (solo rol 'user' o sin rol específico)
+      const { count: usersCount } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'user');
+
+      // Contar estudiantes
+      const { count: studentsCount } = await supabase
+        .from('students')
+        .select('*', { count: 'exact', head: true });
+
+      // Contar vehículos activos
+      const { count: vehiclesCount } = await supabase
+        .from('vehicles')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active');
+
+      // Contar rutas activas
+      const { count: routesCount } = await supabase
+        .from('routes')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active');
+
+      // Contar conductores
+      const { count: driversCount } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'driver');
+
+      // Contar ubicaciones
+      const { count: locationsCount } = await supabase
+        .from('location_tracking')
+        .select('*', { count: 'exact', head: true });
+
+      // Contar noticias
+      const { count: newsCount } = await supabase
+        .from('news')
+        .select('*', { count: 'exact', head: true });
+
+      setCounts({
+        users: usersCount || 0,
+        students: studentsCount || 0,
+        vehicles: vehiclesCount || 0,
+        routes: routesCount || 0,
+        drivers: driversCount || 0,
+        locations: locationsCount || 0,
+        news: newsCount || 0
+      });
+    } catch (error) {
+      console.error('Error loading counts:', error);
+    }
+  };
 
   const stats = [
     {
       title: "Usuarios",
-      value: "0",
+      value: counts.users.toString(),
       icon: UserCog,
       description: "Gestión de usuarios",
       color: "text-orange-500",
@@ -17,7 +87,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Total Estudiantes",
-      value: "0",
+      value: counts.students.toString(),
       icon: Users,
       description: "Estudiantes registrados",
       color: "text-cyan-500",
@@ -26,7 +96,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Vehículos Activos",
-      value: "0",
+      value: counts.vehicles.toString(),
       icon: Car,
       description: "Unidades en servicio",
       color: "text-blue-500",
@@ -35,7 +105,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Rutas Activas",
-      value: "0",
+      value: counts.routes.toString(),
       icon: Route,
       description: "Rutas operativas",
       color: "text-green-500",
@@ -44,7 +114,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Conductores",
-      value: "0",
+      value: counts.drivers.toString(),
       icon: UserCheck,
       description: "Conductores asignados",
       color: "text-purple-500",
@@ -53,7 +123,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Ubicaciones",
-      value: "0",
+      value: counts.locations.toString(),
       icon: Navigation,
       description: "Monitor en tiempo real",
       color: "text-red-500",
@@ -62,7 +132,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Noticias",
-      value: "0",
+      value: counts.news.toString(),
       icon: Newspaper,
       description: "Gestión de noticias",
       color: "text-yellow-500",
@@ -71,7 +141,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Mapa",
-      value: "0",
+      value: "En Vivo",
       icon: Map,
       description: "Vista de mapa en vivo",
       color: "text-indigo-500",
