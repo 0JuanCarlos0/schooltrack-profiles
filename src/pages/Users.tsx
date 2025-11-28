@@ -59,17 +59,19 @@ const Users = () => {
 
       if (rolesError) throw rolesError;
 
-      // Combine data
-      const usersWithRoles: UserWithRole[] = profiles.map(profile => {
-        const userRole = roles.find(r => r.user_id === profile.id);
-        return {
-          id: profile.id,
-          email: profile.email,
-          full_name: profile.full_name,
-          role: userRole?.role || null,
-          created_at: profile.created_at || '',
-        };
-      });
+      // Combine data - Solo mostrar usuarios con rol 'user' o sin rol
+      const usersWithRoles: UserWithRole[] = profiles
+        .map(profile => {
+          const userRole = roles.find(r => r.user_id === profile.id);
+          return {
+            id: profile.id,
+            email: profile.email,
+            full_name: profile.full_name,
+            role: userRole?.role || null,
+            created_at: profile.created_at || '',
+          };
+        })
+        .filter(user => !user.role || user.role === 'user');
 
       setUsers(usersWithRoles);
     } catch (error: any) {
