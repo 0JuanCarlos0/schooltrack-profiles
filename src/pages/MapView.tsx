@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, MapPin, Navigation } from 'lucide-react';
-import { Map } from '@/components/Map';
+import { LeafletMap } from '@/components/LeafletMap';
 
 interface LocationPoint {
   id: string;
@@ -219,12 +219,17 @@ const MapView = () => {
             <Card className="h-[600px] overflow-hidden">
               <CardContent className="p-0 h-full">
                 {!loading && (
-                  <Map
+                  <LeafletMap
                     locations={locations}
                     center={center}
                     sampleRoute={sampleRoute}
                     getUserName={getUserName}
                   />
+                )}
+                {loading && (
+                  <div className="h-full flex items-center justify-center bg-gray-50">
+                    <p className="text-gray-500">Cargando mapa...</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
