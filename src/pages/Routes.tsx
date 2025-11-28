@@ -86,7 +86,7 @@ const Routes = () => {
       description: '',
       start_time: '',
       end_time: '',
-      vehicle_id: ''
+      vehicle_id: 'none'
     });
     setEditingRoute(null);
   };
@@ -101,7 +101,7 @@ const Routes = () => {
         description: formData.description || null,
         start_time: formData.start_time,
         end_time: formData.end_time,
-        vehicle_id: formData.vehicle_id || null
+        vehicle_id: formData.vehicle_id === 'none' ? null : formData.vehicle_id
       };
 
       if (editingRoute) {
@@ -138,7 +138,7 @@ const Routes = () => {
       description: route.description || '',
       start_time: route.start_time,
       end_time: route.end_time,
-      vehicle_id: route.vehicle_id || ''
+      vehicle_id: route.vehicle_id || 'none'
     });
     setIsDialogOpen(true);
   };
@@ -251,7 +251,7 @@ const Routes = () => {
                         <SelectValue placeholder="Seleccionar vehículo" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sin asignar</SelectItem>
+                        <SelectItem value="none">Sin asignar</SelectItem>
                         {vehicles.map((vehicle) => (
                           <SelectItem key={vehicle.id} value={vehicle.id}>
                             {vehicle.vehicle_number} ({vehicle.plate_number})
