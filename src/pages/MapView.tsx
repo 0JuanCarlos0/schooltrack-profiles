@@ -1,25 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, MapPin, Navigation } from 'lucide-react';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Fix para los iconos de Leaflet
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41]
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
+import { Map } from '@/components/Map';
 
 interface LocationPoint {
   id: string;
@@ -231,48 +216,16 @@ const MapView = () => {
 
           {/* Mapa */}
           <div className="lg:col-span-2">
-            <Card className="h-[600px]">
+            <Card className="h-[600px] overflow-hidden">
               <CardContent className="p-0 h-full">
-                <MapContainer
-                  center={center}
-                  zoom={13}
-                  className="h-full w-full rounded-lg"
-                >
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                {!loading && (
+                  <Map
+                    locations={locations}
+                    center={center}
+                    sampleRoute={sampleRoute}
+                    getUserName={getUserName}
                   />
-                  
-                  {/* Marcadores de ubicaciones */}
-                  {locations.map((location) => (
-                    <Marker
-                      key={location.id}
-                      position={[location.latitude, location.longitude]}
-                    >
-                      <Popup>
-                        <div className="text-sm">
-                          <p className="font-semibold">{getUserName(location)}</p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(location.timestamp).toLocaleString('es-MX')}
-                          </p>
-                          {location.accuracy && (
-                            <p className="text-xs text-gray-400">
-                              Precisión: {location.accuracy.toFixed(0)}m
-                            </p>
-                          )}
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
-
-                  {/* Ruta de ejemplo */}
-                  <Polyline
-                    positions={sampleRoute}
-                    color="blue"
-                    weight={3}
-                    opacity={0.6}
-                  />
-                </MapContainer>
+                )}
               </CardContent>
             </Card>
           </div>
