@@ -93,7 +93,7 @@ const Vehicles = () => {
       vehicle_number: '',
       plate_number: '',
       capacity: '',
-      driver_id: ''
+      driver_id: 'none'
     });
     setEditingVehicle(null);
   };
@@ -107,7 +107,7 @@ const Vehicles = () => {
         vehicle_number: formData.vehicle_number,
         plate_number: formData.plate_number,
         capacity: parseInt(formData.capacity),
-        driver_id: formData.driver_id || null
+        driver_id: formData.driver_id === 'none' ? null : formData.driver_id
       };
 
       if (editingVehicle) {
@@ -143,7 +143,7 @@ const Vehicles = () => {
       vehicle_number: vehicle.vehicle_number,
       plate_number: vehicle.plate_number,
       capacity: vehicle.capacity.toString(),
-      driver_id: vehicle.driver_id || ''
+      driver_id: vehicle.driver_id || 'none'
     });
     setIsDialogOpen(true);
   };
@@ -246,7 +246,7 @@ const Vehicles = () => {
                         <SelectValue placeholder="Seleccionar conductor" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sin asignar</SelectItem>
+                        <SelectItem value="none">Sin asignar</SelectItem>
                         {drivers.map((driver) => (
                           <SelectItem key={driver.id} value={driver.id}>
                             {driver.full_name || driver.email}
