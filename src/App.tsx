@@ -16,6 +16,8 @@ import Profile from "./pages/Profile";
 import Users from "./pages/Users";
 import LocationTracking from "./pages/LocationTracking";
 import AdminLocations from "./pages/AdminLocations";
+import NewsAdmin from "./pages/NewsAdmin";
+import MapView from "./pages/MapView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -99,6 +101,22 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminLocations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/news"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <NewsAdmin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/map"
+              element={
+                <ProtectedRoute>
+                  <MapView />
                 </ProtectedRoute>
               }
             />

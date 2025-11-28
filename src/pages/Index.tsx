@@ -1,13 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
 
+interface NewsItem {
+  id: string;
+  title: string;
+  date: string;
+  description: string;
+}
+
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [loadingNews, setLoadingNews] = useState(true);
 
   useEffect(() => {
     if (!loading && user) {
@@ -15,23 +25,26 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
-  const newsItems = [
-    {
-      title: "Bienvenidos a SchoolTrack UTSJR",
-      date: "11 de noviembre de 2025",
-      description: "Sistema de seguimiento en tiempo real para transporte escolar de UTSJR"
-    },
-    {
-      title: "Seguridad en el Transporte Escolar",
-      date: "11 de noviembre de 2025",
-      description: "Conoce las medidas de seguridad implementadas en el transporte"
-    },
-    {
-      title: "Nuevas Rutas Disponibles",
-      date: "11 de noviembre de 2025",
-      description: "Más opciones de transporte para la comunidad estudiantil"
+  useEffect(() => {
+    loadNews();
+  }, []);
+
+  const loadNews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setNewsItems(data || []);
+    } catch (error) {
+      console.error('Error al cargar noticias:', error);
+    } finally {
+      setLoadingNews(false);
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-cyan-50 via-white to-cyan-50">
@@ -80,22 +93,32 @@ const Index = () => {
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
             Noticias y Actualizaciones
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {newsItems.map((item, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-xl">{item.title}</CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {item.date}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">{item.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {loadingNews ? (
+            <p className="text-center text-gray-500">Cargando noticias...</p>
+          ) : newsItems.length === 0 ? (
+            <p className="text-center text-gray-500">No hay noticias disponibles</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {newsItems.map((item) => (
+                <Card key={item.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-xl">{item.title}</CardTitle>
+                    <CardDescription className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      {new Date(item.date).toLocaleDateString('es-MX', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600">{item.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
