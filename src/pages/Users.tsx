@@ -303,7 +303,7 @@ const Users = () => {
           <CardHeader>
             <CardTitle>Usuarios del Sistema</CardTitle>
             <CardDescription>
-              {users.length} usuario{users.length !== 1 ? 's' : ''} registrado{users.length !== 1 ? 's' : ''}
+              {users.length} usuario{users.length !== 1 ? 's' : ''} sin rol específico. Una vez asignado un rol (estudiante, padre, conductor), el usuario se eliminará de esta lista.
             </CardDescription>
           </CardHeader>
           <CardContent>
