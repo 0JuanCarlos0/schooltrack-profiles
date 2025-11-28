@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Car, Route, UserCheck, UserCog, Navigation } from 'lucide-react';
+import { Users, Car, Route, UserCheck, UserCog, Navigation, Newspaper, Map } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -59,6 +59,24 @@ const AdminDashboard = () => {
       color: "text-red-500",
       bgColor: "bg-red-50",
       route: "/admin/locations"
+    },
+    {
+      title: "Noticias",
+      value: "0",
+      icon: Newspaper,
+      description: "Gestión de noticias",
+      color: "text-yellow-500",
+      bgColor: "bg-yellow-50",
+      route: "/admin/news"
+    },
+    {
+      title: "Mapa",
+      value: "0",
+      icon: Map,
+      description: "Vista de mapa en vivo",
+      color: "text-indigo-500",
+      bgColor: "bg-indigo-50",
+      route: "/map"
     }
   ];
 
@@ -69,7 +87,7 @@ const AdminDashboard = () => {
         <p className="text-gray-600 mt-2">Gestiona todo el sistema de transporte escolar</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <Card 
             key={index} 
@@ -143,6 +161,30 @@ const AdminDashboard = () => {
                 <div>
                   <p className="font-medium">Gestionar Rutas</p>
                   <p className="text-sm text-muted-foreground">Configurar rutas y horarios</p>
+                </div>
+              </div>
+            </button>
+            <button 
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-yellow-50 transition-colors border border-border"
+              onClick={() => navigate('/admin/news')}
+            >
+              <div className="flex items-center gap-3">
+                <Newspaper className="w-5 h-5 text-yellow-500" />
+                <div>
+                  <p className="font-medium">Gestionar Noticias</p>
+                  <p className="text-sm text-muted-foreground">Publicar noticias y actualizaciones</p>
+                </div>
+              </div>
+            </button>
+            <button 
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 transition-colors border border-border"
+              onClick={() => navigate('/map')}
+            >
+              <div className="flex items-center gap-3">
+                <Map className="w-5 h-5 text-indigo-500" />
+                <div>
+                  <p className="font-medium">Ver Mapa en Vivo</p>
+                  <p className="text-sm text-muted-foreground">Monitorear vehículos en tiempo real</p>
                 </div>
               </div>
             </button>
