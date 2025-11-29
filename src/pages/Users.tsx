@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { UserPlus, Edit, Loader2 } from 'lucide-react';
+import { UserPlus, Edit, Loader2, Trash2 } from 'lucide-react';
 
 type UserRole = 'admin' | 'student' | 'parent' | 'driver' | 'user';
 
@@ -39,6 +39,7 @@ const Users = () => {
   const [newUserFullName, setNewUserFullName] = useState('');
   const [newUserRole, setNewUserRole] = useState<UserRole>('user');
   const [editRole, setEditRole] = useState<UserRole>('user');
+  const [filterRole, setFilterRole] = useState<string>('all');
 
   useEffect(() => {
     fetchUsers();
@@ -63,7 +64,7 @@ const Users = () => {
 
       if (rolesError) throw rolesError;
 
-      // Combine data - Solo mostrar usuarios con rol 'user' o sin rol
+      // Combine data - Mostrar TODOS los usuarios
       const usersWithRoles: UserWithRole[] = profiles
         .map(profile => {
           const userRole = roles.find(r => r.user_id === profile.id);
@@ -74,8 +75,7 @@ const Users = () => {
             role: userRole?.role || null,
             created_at: profile.created_at || '',
           };
-        })
-        .filter(user => !user.role || user.role === 'user');
+        });
 
       setUsers(usersWithRoles);
     } catch (error: any) {
@@ -236,6 +236,59 @@ const Users = () => {
     }
   };
 
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (!confirm(`¿Estás seguro de eliminar al usuario ${userEmail}? Esta acción eliminará todos sus datos relacionados.`)) {
+      return;
+    }
+
+    try {
+      // Primero eliminar registros relacionados
+      
+      // Eliminar de students si existe
+      await supabase
+        .from('students')
+        .delete()
+        .eq('user_id', userId);
+
+      // Eliminar location_tracking
+      await supabase
+        .from('location_tracking')
+        .delete()
+        .eq('user_id', userId);
+
+      // Eliminar de vehicles como conductor
+      await supabase
+        .from('vehicles')
+        .update({ driver_id: null })
+        .eq('driver_id', userId);
+
+      // Eliminar user_roles
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      // Eliminar profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (profileError) throw profileError;
+
+      // Finalmente eliminar el usuario de auth
+      // Nota: Esto requeriría llamar a un edge function con permisos de admin
+      // Por ahora solo eliminamos el perfil y el rol
+      
+      toast.success('Usuario eliminado exitosamente');
+      fetchUsers();
+    } catch (error: any) {
+      toast.error('Error al eliminar usuario', {
+        description: error.message,
+      });
+    }
+  };
+
   const getRoleBadge = (role: UserRole | null) => {
     const variants: Record<UserRole, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
       admin: { label: 'Administrador', variant: 'destructive' },
@@ -251,14 +304,21 @@ const Users = () => {
     return <Badge variant={variant}>{label}</Badge>;
   };
 
+  const filteredUsers = filterRole === 'all' 
+    ? users 
+    : users.filter(user => 
+        filterRole === 'sin-rol' 
+          ? !user.role 
+          : user.role === filterRole
+      );
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Gestión de Usuarios</h1>
           <p className="text-muted-foreground mt-1">
-            Los usuarios deben registrarse en <span className="font-mono text-sm bg-muted px-2 py-0.5 rounded">/auth?mode=signup</span>. 
-            Una vez registrados, aparecerán aquí para asignarles roles.
+            Administra todos los usuarios del sistema y sus roles.
           </p>
         </div>
         
@@ -413,8 +473,31 @@ const Users = () => {
             </div>
           </CardHeader>
           <CardContent>
+            <div className="mb-4">
+              <Label htmlFor="filterRole">Filtrar por rol</Label>
+              <Select value={filterRole} onValueChange={setFilterRole}>
+                <SelectTrigger id="filterRole">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los roles</SelectItem>
+                  <SelectItem value="sin-rol">Sin rol asignado</SelectItem>
+                  <SelectItem value="admin">Administradores</SelectItem>
+                  <SelectItem value="driver">Conductores</SelectItem>
+                  <SelectItem value="student">Estudiantes</SelectItem>
+                  <SelectItem value="parent">Padres</SelectItem>
+                  <SelectItem value="user">Usuarios</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
             <div className="space-y-4">
-              {users.map((user) => (
+              {filteredUsers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No hay usuarios con el filtro seleccionado
+                </div>
+              ) : (
+                filteredUsers.map((user) => (
                 <div
                   key={user.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
@@ -431,20 +514,31 @@ const Users = () => {
                     </div>
                   </div>
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setEditRole(user.role || 'user');
-                      setEditDialogOpen(true);
-                    }}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Cambiar Rol
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setEditRole(user.role || 'user');
+                        setEditDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Cambiar Rol
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteUser(user.id, user.email)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           </CardContent>
         </Card>
