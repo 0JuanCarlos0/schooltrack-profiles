@@ -42,7 +42,7 @@ const Routes = () => {
     description: '',
     start_time: '',
     end_time: '',
-    vehicle_id: ''
+    vehicle_id: 'none'
   });
 
   useEffect(() => {

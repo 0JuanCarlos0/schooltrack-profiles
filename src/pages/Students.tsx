@@ -56,7 +56,7 @@ const Students = () => {
     emergency_contact: '',
     emergency_phone: '',
     status: 'active',
-    user_id: '',
+    user_id: 'none',
   });
 
   useEffect(() => {
@@ -108,7 +108,7 @@ const Students = () => {
       emergency_contact: '',
       emergency_phone: '',
       status: 'active',
-      user_id: '',
+      user_id: 'none',
     });
     setEditingStudent(null);
   };
@@ -144,7 +144,7 @@ const Students = () => {
         emergency_contact: formData.emergency_contact || null,
         emergency_phone: formData.emergency_phone || null,
         status: formData.status,
-        user_id: formData.user_id || null,
+        user_id: formData.user_id === 'none' ? null : formData.user_id,
       };
 
       if (editingStudent) {
@@ -190,7 +190,7 @@ const Students = () => {
       emergency_contact: student.emergency_contact || '',
       emergency_phone: student.emergency_phone || '',
       status: student.status,
-      user_id: student.user_id || '',
+      user_id: student.user_id || 'none',
     });
     setDialogOpen(true);
   };
@@ -377,7 +377,7 @@ const Students = () => {
                               <SelectValue placeholder="Sin usuario" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Sin usuario</SelectItem>
+                              <SelectItem value="none">Sin usuario</SelectItem>
                               {availableUsers.map((user) => (
                                 <SelectItem key={user.id} value={user.id}>
                                   {user.full_name || user.email}
