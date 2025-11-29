@@ -18,7 +18,14 @@ Deno.serve(async (req) => {
       }
     )
 
-    // Crear 7 usuarios regulares
+    // Verificar usuarios existentes primero
+    const { data: existingProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('email')
+    
+    const existingEmails = new Set(existingProfiles?.map(p => p.email) || [])
+    
+    // Crear 7 usuarios regulares solo si no existen
     const usuarios = [
       { email: 'usuario1@schooltrack.com', password: 'pass123', fullName: 'Usuario Uno' },
       { email: 'usuario2@schooltrack.com', password: 'pass123', fullName: 'Usuario Dos' },
@@ -31,6 +38,12 @@ Deno.serve(async (req) => {
 
     const usuariosCreados = []
     for (const usuario of usuarios) {
+      // Saltar si el usuario ya existe
+      if (existingEmails.has(usuario.email)) {
+        console.log(`Usuario ${usuario.email} ya existe, saltando...`)
+        continue
+      }
+
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: usuario.email,
         password: usuario.password,
@@ -53,7 +66,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Crear 5 conductores adicionales
+    // Crear 5 conductores adicionales solo si no existen
     const conductores = [
       { email: 'conductor4@schooltrack.com', password: 'pass123', fullName: 'Conductor Cuatro', vehicle: 'BUS-011' },
       { email: 'conductor5@schooltrack.com', password: 'pass123', fullName: 'Conductor Cinco', vehicle: 'BUS-012' },
@@ -64,6 +77,12 @@ Deno.serve(async (req) => {
 
     const conductoresCreados = []
     for (const conductor of conductores) {
+      // Saltar si el conductor ya existe
+      if (existingEmails.has(conductor.email)) {
+        console.log(`Conductor ${conductor.email} ya existe, saltando...`)
+        continue
+      }
+
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: conductor.email,
         password: conductor.password,
@@ -128,7 +147,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Crear 11 estudiantes
+    // Verificar estudiantes existentes
+    const { data: existingStudents } = await supabaseAdmin
+      .from('students')
+      .select('student_code')
+    
+    const existingCodes = new Set(existingStudents?.map(s => s.student_code) || [])
+
+    // Crear 11 estudiantes solo si no existen
     const estudiantes = [
       { code: 'EST-001', firstName: 'Ana', lastName: 'García', grade: '5to' },
       { code: 'EST-002', firstName: 'Carlos', lastName: 'Martínez', grade: '6to' },
@@ -154,6 +180,12 @@ Deno.serve(async (req) => {
     for (let i = 0; i < estudiantes.length; i++) {
       const estudiante = estudiantes[i]
       
+      // Saltar si el estudiante ya existe
+      if (existingCodes.has(estudiante.code)) {
+        console.log(`Estudiante ${estudiante.code} ya existe, saltando...`)
+        continue
+      }
+
       const { data: studentData, error: studentError } = await supabaseAdmin
         .from('students')
         .insert({
