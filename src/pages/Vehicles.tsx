@@ -48,7 +48,7 @@ const Vehicles = () => {
     vehicle_number: '',
     plate_number: '',
     capacity: '',
-    driver_id: ''
+    driver_id: 'none'
   });
 
   useEffect(() => {
