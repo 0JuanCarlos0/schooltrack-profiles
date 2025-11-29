@@ -93,15 +93,37 @@ const Routes = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validaciones
+    if (!formData.name.trim()) {
+      toast.error('El nombre de la ruta es requerido');
+      return;
+    }
+    if (!formData.start_time) {
+      toast.error('La hora de inicio es requerida');
+      return;
+    }
+    if (!formData.end_time) {
+      toast.error('La hora de fin es requerida');
+      return;
+    }
+    
+    // Validar que la hora de fin sea posterior a la de inicio
+    if (formData.start_time >= formData.end_time) {
+      toast.error('La hora de fin debe ser posterior a la hora de inicio');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const routeData = {
-        name: formData.name,
-        description: formData.description || null,
+        name: formData.name.trim(),
+        description: formData.description?.trim() || null,
         start_time: formData.start_time,
         end_time: formData.end_time,
-        vehicle_id: formData.vehicle_id === 'none' ? null : formData.vehicle_id
+        vehicle_id: formData.vehicle_id === 'none' ? null : formData.vehicle_id,
+        status: 'active'
       };
 
       if (editingRoute) {
@@ -124,6 +146,7 @@ const Routes = () => {
       setIsDialogOpen(false);
       resetForm();
       loadRoutes();
+      loadVehicles(); // Recargar vehículos
     } catch (error: any) {
       toast.error('Error: ' + error.message);
     } finally {
@@ -143,10 +166,18 @@ const Routes = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar esta ruta?')) return;
+  const handleDelete = async (id: string, routeName: string) => {
+    if (!confirm(`¿Estás seguro de eliminar la ruta "${routeName}"? Esta acción también eliminará las asignaciones de estudiantes.`)) return;
 
+    setLoading(true);
     try {
+      // Primero eliminar las asignaciones de estudiantes
+      await supabase
+        .from('student_routes')
+        .delete()
+        .eq('route_id', id);
+
+      // Luego eliminar la ruta
       const { error } = await supabase
         .from('routes')
         .delete()
@@ -157,6 +188,8 @@ const Routes = () => {
       loadRoutes();
     } catch (error: any) {
       toast.error('Error al eliminar: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -336,7 +369,7 @@ const Routes = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDelete(route.id)}
+                              onClick={() => handleDelete(route.id, route.name)}
                             >
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </Button>

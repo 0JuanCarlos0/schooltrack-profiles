@@ -64,13 +64,28 @@ const NewsAdmin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validaciones
+    if (!formData.title.trim()) {
+      toast.error('El título es requerido');
+      return;
+    }
+    if (!formData.date) {
+      toast.error('La fecha es requerida');
+      return;
+    }
+    if (!formData.description.trim()) {
+      toast.error('La descripción es requerida');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const newsData = {
-        title: formData.title,
+        title: formData.title.trim(),
         date: formData.date,
-        description: formData.description
+        description: formData.description.trim()
       };
 
       if (editingNews) {
@@ -110,9 +125,10 @@ const NewsAdmin = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar esta noticia?')) return;
+  const handleDelete = async (id: string, newsTitle: string) => {
+    if (!confirm(`¿Estás seguro de eliminar la noticia "${newsTitle}"?`)) return;
 
+    setLoading(true);
     try {
       const { error } = await supabase
         .from('news')
@@ -124,6 +140,8 @@ const NewsAdmin = () => {
       loadNews();
     } catch (error: any) {
       toast.error('Error al eliminar: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -254,7 +272,7 @@ const NewsAdmin = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDelete(newsItem.id)}
+                              onClick={() => handleDelete(newsItem.id, newsItem.title)}
                             >
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </Button>

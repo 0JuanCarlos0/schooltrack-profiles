@@ -128,14 +128,30 @@ const Vehicles = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validaciones
+    if (!formData.vehicle_number.trim()) {
+      toast.error('El número de vehículo es requerido');
+      return;
+    }
+    if (!formData.plate_number.trim()) {
+      toast.error('El número de placa es requerido');
+      return;
+    }
+    if (!formData.capacity || parseInt(formData.capacity) <= 0) {
+      toast.error('La capacidad debe ser mayor a 0');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const vehicleData = {
-        vehicle_number: formData.vehicle_number,
-        plate_number: formData.plate_number,
+        vehicle_number: formData.vehicle_number.trim(),
+        plate_number: formData.plate_number.trim().toUpperCase(),
         capacity: parseInt(formData.capacity),
-        driver_id: formData.driver_id === 'none' ? null : formData.driver_id
+        driver_id: formData.driver_id === 'none' ? null : formData.driver_id,
+        status: 'active'
       };
 
       if (editingVehicle) {
@@ -158,6 +174,7 @@ const Vehicles = () => {
       setIsDialogOpen(false);
       resetForm();
       loadVehicles();
+      loadDrivers(); // Recargar conductores
     } catch (error: any) {
       toast.error('Error: ' + error.message);
     } finally {
@@ -176,10 +193,18 @@ const Vehicles = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este vehículo?')) return;
+  const handleDelete = async (id: string, vehicleNumber: string) => {
+    if (!confirm(`¿Estás seguro de eliminar el vehículo "${vehicleNumber}"? Esta acción también desasignará sus rutas.`)) return;
 
+    setLoading(true);
     try {
+      // Primero desasignar el vehículo de las rutas
+      await supabase
+        .from('routes')
+        .update({ vehicle_id: null })
+        .eq('vehicle_id', id);
+
+      // Luego eliminar el vehículo
       const { error } = await supabase
         .from('vehicles')
         .delete()
@@ -190,6 +215,8 @@ const Vehicles = () => {
       loadVehicles();
     } catch (error: any) {
       toast.error('Error al eliminar: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -371,7 +398,7 @@ const Vehicles = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDelete(vehicle.id)}
+                              onClick={() => handleDelete(vehicle.id, vehicle.vehicle_number)}
                             >
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </Button>
