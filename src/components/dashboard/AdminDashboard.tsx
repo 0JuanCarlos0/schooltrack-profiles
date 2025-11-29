@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Car, Route, UserCheck, UserCog, Navigation, Newspaper, Map } from 'lucide-react';
+import { Users, Car, Route, UserCheck, UserCog, Navigation, Newspaper, Map, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+
+interface NewsItem {
+  id: string;
+  title: string;
+  date: string;
+  description: string;
+}
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -15,12 +22,18 @@ const AdminDashboard = () => {
     locations: 0,
     news: 0
   });
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [loadingNews, setLoadingNews] = useState(true);
 
   useEffect(() => {
     loadCounts();
+    loadNews();
     
     // Recargar cada 30 segundos para mantener actualizado
-    const interval = setInterval(loadCounts, 30000);
+    const interval = setInterval(() => {
+      loadCounts();
+      loadNews();
+    }, 30000);
     
     return () => clearInterval(interval);
   }, []);
@@ -77,6 +90,23 @@ const AdminDashboard = () => {
       });
     } catch (error) {
       console.error('Error loading counts:', error);
+    }
+  };
+
+  const loadNews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setNewsItems(data || []);
+    } catch (error) {
+      console.error('Error al cargar noticias:', error);
+    } finally {
+      setLoadingNews(false);
     }
   };
 
@@ -290,6 +320,50 @@ const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Sección de Noticias */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-gray-900">Noticias y Actualizaciones</h3>
+          <button 
+            onClick={() => navigate('/admin/news')}
+            className="text-cyan-600 hover:text-cyan-700 font-medium flex items-center gap-2 transition-colors"
+          >
+            Ver todas
+            <Newspaper className="w-4 h-4" />
+          </button>
+        </div>
+        {loadingNews ? (
+          <p className="text-center text-gray-500 py-8">Cargando noticias...</p>
+        ) : newsItems.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-center text-gray-500">No hay noticias disponibles</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {newsItems.map((item) => (
+              <Card key={item.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-lg">{item.title}</CardTitle>
+                  <CardDescription className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(item.date).toLocaleDateString('es-MX', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 text-sm">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
