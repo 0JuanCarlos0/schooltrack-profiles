@@ -40,6 +40,7 @@ const Users = () => {
   const [newUserRole, setNewUserRole] = useState<UserRole>('user');
   const [editRole, setEditRole] = useState<UserRole>('user');
   const [filterRole, setFilterRole] = useState<string>('all');
+  const [seedingData, setSeedingData] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -289,6 +290,47 @@ const Users = () => {
     }
   };
 
+  const handleSeedData = async () => {
+    setSeedingData(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('No hay sesión activa');
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/seed-data`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error al crear datos');
+      }
+
+      toast.success('Datos creados exitosamente', {
+        description: `${result.usuarios.length} usuarios, ${result.conductores.length} conductores, ${result.estudiantes.length} estudiantes`,
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      toast.error('Error al crear datos de prueba', {
+        description: error.message,
+      });
+    } finally {
+      setSeedingData(false);
+    }
+  };
+
   const getRoleBadge = (role: UserRole | null) => {
     const variants: Record<UserRole, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
       admin: { label: 'Administrador', variant: 'destructive' },
@@ -322,10 +364,21 @@ const Users = () => {
           </p>
         </div>
         
-        <Button onClick={() => navigate('/auth?mode=signup')} variant="outline">
-          <UserPlus className="mr-2 h-4 w-4" />
-          Ir a Registro
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleSeedData} 
+            disabled={seedingData}
+            variant="default"
+          >
+            {seedingData && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {seedingData ? 'Creando...' : 'Crear Datos de Prueba'}
+          </Button>
+          
+          <Button onClick={() => navigate('/auth?mode=signup')} variant="outline">
+            <UserPlus className="mr-2 h-4 w-4" />
+            Ir a Registro
+          </Button>
+        </div>
       </div>
 
       {loading ? (
