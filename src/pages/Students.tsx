@@ -115,11 +115,35 @@ const Students = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validaciones
+    if (!formData.student_code.trim()) {
+      toast.error('El código del estudiante es requerido');
+      return;
+    }
+    if (!formData.first_name.trim()) {
+      toast.error('El nombre es requerido');
+      return;
+    }
+    if (!formData.last_name.trim()) {
+      toast.error('El apellido es requerido');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const submitData = {
-        ...formData,
+        student_code: formData.student_code.trim(),
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
+        date_of_birth: formData.date_of_birth || null,
+        grade: formData.grade || null,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        emergency_contact: formData.emergency_contact || null,
+        emergency_phone: formData.emergency_phone || null,
+        status: formData.status,
         user_id: formData.user_id || null,
       };
 
@@ -145,6 +169,7 @@ const Students = () => {
       setDialogOpen(false);
       resetForm();
       loadStudents();
+      loadAvailableUsers(); // Recargar usuarios disponibles
     } catch (error: any) {
       toast.error('Error: ' + error.message);
     } finally {
@@ -170,21 +195,32 @@ const Students = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este estudiante?')) return;
+  const handleDelete = async (id: string, studentName: string) => {
+    if (!confirm(`¿Estás seguro de eliminar al estudiante "${studentName}"? Esta acción también eliminará sus asignaciones de rutas.`)) return;
 
-    const { error } = await supabase
-      .from('students')
-      .delete()
-      .eq('id', id);
+    setLoading(true);
+    try {
+      // Primero eliminar las asignaciones de rutas
+      await supabase
+        .from('student_routes')
+        .delete()
+        .eq('student_id', id);
 
-    if (error) {
-      toast.error('Error al eliminar estudiante');
-      return;
+      // Luego eliminar el estudiante
+      const { error } = await supabase
+        .from('students')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Estudiante eliminado correctamente');
+      loadStudents();
+    } catch (error: any) {
+      toast.error('Error al eliminar estudiante: ' + error.message);
+    } finally {
+      setLoading(false);
     }
-
-    toast.success('Estudiante eliminado correctamente');
-    loadStudents();
   };
 
   const filteredStudents = students.filter((student) =>
@@ -439,7 +475,7 @@ const Students = () => {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleDelete(student.id)}
+                              onClick={() => handleDelete(student.id, `${student.first_name} ${student.last_name}`)}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
