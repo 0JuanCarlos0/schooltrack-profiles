@@ -18,6 +18,11 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     loadCounts();
+    
+    // Recargar cada 30 segundos para mantener actualizado
+    const interval = setInterval(loadCounts, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const loadCounts = async () => {
@@ -207,6 +212,18 @@ const AdminDashboard = () => {
                 <div>
                   <p className="font-medium">Gestionar Estudiantes</p>
                   <p className="text-sm text-muted-foreground">Agregar, editar o eliminar estudiantes</p>
+                </div>
+              </div>
+            </button>
+            <button 
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors border border-border"
+              onClick={() => navigate('/drivers')}
+            >
+              <div className="flex items-center gap-3">
+                <UserCheck className="w-5 h-5 text-purple-500" />
+                <div>
+                  <p className="font-medium">Gestionar Conductores</p>
+                  <p className="text-sm text-muted-foreground">Administrar conductores asignados</p>
                 </div>
               </div>
             </button>
