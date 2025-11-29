@@ -322,65 +322,10 @@ const Users = () => {
           </p>
         </div>
         
-        <div className="flex gap-2">
-          <Button onClick={() => navigate('/auth?mode=signup')} variant="outline">
-            <UserPlus className="mr-2 h-4 w-4" />
-            Ir a Registro
-          </Button>
-          
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="secondary">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Usuarios de Prueba
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-xl">
-              <DialogHeader>
-                <DialogTitle>Crear Usuarios de Prueba</DialogTitle>
-                <DialogDescription>
-                  Registra estos usuarios para pruebas (usa una ventana privada para mantener tu sesión de admin)
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg space-y-2">
-                  <p className="font-medium text-sm">Conductores (3):</p>
-                  <div className="space-y-1 text-sm font-mono">
-                    <p>• conductor1@schooltrack.com / pass123</p>
-                    <p>• conductor2@schooltrack.com / pass123</p>
-                    <p>• conductor3@schooltrack.com / pass123</p>
-                  </div>
-                </div>
-                
-                <div className="p-4 bg-muted rounded-lg space-y-2">
-                  <p className="font-medium text-sm">Usuarios Generales (7):</p>
-                  <div className="space-y-1 text-sm font-mono">
-                    <p>• usuario1@schooltrack.com / pass123</p>
-                    <p>• usuario2@schooltrack.com / pass123</p>
-                    <p>• usuario3@schooltrack.com / pass123</p>
-                    <p>• usuario4@schooltrack.com / pass123</p>
-                    <p>• usuario5@schooltrack.com / pass123</p>
-                    <p>• usuario6@schooltrack.com / pass123</p>
-                    <p>• usuario7@schooltrack.com / pass123</p>
-                  </div>
-                </div>
-                
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800">
-                    <strong>Importante:</strong> Abre una ventana privada para registrar estos usuarios y no perder tu sesión de admin.
-                  </p>
-                </div>
-              </div>
-              
-              <DialogFooter>
-                <Button onClick={() => window.open('/auth?mode=signup', '_blank')}>
-                  Abrir Registro en Nueva Pestaña
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Button onClick={() => navigate('/auth?mode=signup')} variant="outline">
+          <UserPlus className="mr-2 h-4 w-4" />
+          Ir a Registro
+        </Button>
       </div>
 
       {loading ? (
@@ -394,82 +339,9 @@ const Users = () => {
               <div>
                 <CardTitle>Usuarios del Sistema</CardTitle>
                 <CardDescription>
-                  {users.length} usuario{users.length !== 1 ? 's' : ''} sin rol específico. Una vez asignado un rol (estudiante, padre, conductor), el usuario se eliminará de esta lista.
+                  {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''} registrado{filteredUsers.length !== 1 ? 's' : ''} en el sistema.
                 </CardDescription>
               </div>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    Asignar Conductores Rápido
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Asignación Rápida de Conductores</DialogTitle>
-                    <DialogDescription>
-                      Esto asignará rol de conductor a los primeros 3 usuarios y los vinculará a BUS-001, BUS-002, BUS-003
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="space-y-4 py-4">
-                    {users.slice(0, 3).length > 0 ? (
-                      <>
-                        <p className="text-sm">Se asignarán estos usuarios como conductores:</p>
-                        <div className="space-y-2">
-                          {users.slice(0, 3).map((user, idx) => (
-                            <div key={user.id} className="p-3 bg-muted rounded-lg">
-                              <p className="font-medium">{user.full_name || user.email}</p>
-                              <p className="text-sm text-muted-foreground">
-                                → BUS-00{idx + 1}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-center text-muted-foreground py-8">
-                        No hay usuarios disponibles. Registra al menos 3 usuarios primero.
-                      </p>
-                    )}
-                  </div>
-                  
-                  <DialogFooter>
-                    <Button 
-                      disabled={users.length < 3}
-                      onClick={async () => {
-                        try {
-                          const conductores = users.slice(0, 3);
-                          
-                          for (let i = 0; i < conductores.length; i++) {
-                            const user = conductores[i];
-                            
-                            // Asignar rol
-                            await supabase
-                              .from('user_roles')
-                              .insert({ user_id: user.id, role: 'driver' });
-                            
-                            // Asignar a vehículo
-                            await supabase
-                              .from('vehicles')
-                              .update({ driver_id: user.id })
-                              .eq('vehicle_number', `BUS-00${i + 1}`);
-                          }
-                          
-                          toast.success('Conductores asignados exitosamente');
-                          fetchUsers();
-                        } catch (error: any) {
-                          toast.error('Error al asignar conductores', {
-                            description: error.message
-                          });
-                        }
-                      }}
-                    >
-                      Asignar Ahora
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
             </div>
           </CardHeader>
           <CardContent>
