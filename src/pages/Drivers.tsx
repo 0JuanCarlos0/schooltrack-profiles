@@ -44,6 +44,7 @@ const Drivers = () => {
   const [formData, setFormData] = useState({
     user_id: '',
     full_name: '',
+    email: '',
     vehicle_id: 'none'
   });
   
@@ -137,6 +138,7 @@ const Drivers = () => {
     setFormData({
       user_id: '',
       full_name: '',
+      email: '',
       vehicle_id: 'none'
     });
     setEditingDriver(null);
@@ -152,6 +154,11 @@ const Drivers = () => {
       return;
     }
 
+    if (editingDriver && !formData.email.trim()) {
+      toast.error('El email es requerido');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -161,6 +168,7 @@ const Drivers = () => {
           .from('profiles')
           .update({ 
             full_name: formData.full_name.trim(),
+            email: formData.email.trim(),
             role: 'driver'
           })
           .eq('id', editingDriver.id);
@@ -242,6 +250,7 @@ const Drivers = () => {
     setFormData({
       user_id: driver.id,
       full_name: driver.full_name || '',
+      email: driver.email || '',
       vehicle_id: driver.vehicle_id || 'none'
     });
     setIsDialogOpen(true);
@@ -352,6 +361,19 @@ const Drivers = () => {
                         required
                       />
                     </div>
+                    {editingDriver && (
+                      <div>
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="Email del conductor"
+                          required
+                        />
+                      </div>
+                    )}
                     <div>
                       <Label htmlFor="vehicle_id">Vehículo Asignado</Label>
                       <select
