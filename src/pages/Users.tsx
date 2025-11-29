@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ interface UserWithRole {
 }
 
 const Users = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -96,51 +98,20 @@ const Users = () => {
     setCreatingUser(true);
 
     try {
-      // Create user using admin API
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: newUserEmail,
-        password: newUserPassword,
-        options: {
-          data: {
-            full_name: newUserFullName,
-          },
-        },
-      });
-
-      if (signUpError) throw signUpError;
-      if (!data.user) throw new Error('No se pudo crear el usuario');
-
-      // Update profile with full name
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ full_name: newUserFullName })
-        .eq('id', data.user.id);
-
-      if (profileError) throw profileError;
-
-      // Assign role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: data.user.id,
-          role: newUserRole,
-        });
-
-      if (roleError) throw roleError;
-
-      toast.success('Usuario creado exitosamente');
+      // Informar al admin que no podemos crear usuarios directamente
+      // sin perder su sesión
+      toast.info('Los usuarios deben registrarse desde /auth?mode=signup');
+      toast.info('Una vez registrados, podrás asignarles roles aquí');
+      
+      setCreateDialogOpen(false);
       
       // Reset form
       setNewUserEmail('');
       setNewUserPassword('');
       setNewUserFullName('');
       setNewUserRole('user');
-      setCreateDialogOpen(false);
-      
-      // Refresh list
-      fetchUsers();
     } catch (error: any) {
-      toast.error('Error al crear usuario', {
+      toast.error('Error', {
         description: error.message,
       });
     } finally {
@@ -285,91 +256,16 @@ const Users = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Gestión de Usuarios</h1>
-          <p className="text-muted-foreground mt-1">Administra usuarios y asigna roles</p>
+          <p className="text-muted-foreground mt-1">
+            Los usuarios deben registrarse en <span className="font-mono text-sm bg-muted px-2 py-0.5 rounded">/auth?mode=signup</span>. 
+            Una vez registrados, aparecerán aquí para asignarles roles.
+          </p>
         </div>
         
-        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Crear Usuario
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreateUser}>
-              <DialogHeader>
-                <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-                <DialogDescription>
-                  Completa los datos para crear una nueva cuenta
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Nombre Completo</Label>
-                  <Input
-                    id="fullName"
-                    value={newUserFullName}
-                    onChange={(e) => setNewUserFullName(e.target.value)}
-                    placeholder="Juan Pérez"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Correo Electrónico</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={newUserEmail}
-                    onChange={(e) => setNewUserEmail(e.target.value)}
-                    placeholder="usuario@ejemplo.com"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newUserPassword}
-                    onChange={(e) => setNewUserPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="role">Rol</Label>
-                  <Select value={newUserRole} onValueChange={(value) => setNewUserRole(value as UserRole)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">Usuario</SelectItem>
-                      <SelectItem value="student">Estudiante</SelectItem>
-                      <SelectItem value="parent">Padre</SelectItem>
-                      <SelectItem value="driver">Conductor</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={creatingUser}>
-                  {creatingUser && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Crear Usuario
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => navigate('/auth?mode=signup')} variant="outline">
+          <UserPlus className="mr-2 h-4 w-4" />
+          Ir a Registro
+        </Button>
       </div>
 
       {loading ? (
