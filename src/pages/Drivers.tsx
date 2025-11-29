@@ -36,6 +36,7 @@ const Drivers = () => {
     user_id: '',
     full_name: ''
   });
+  const [creatingDrivers, setCreatingDrivers] = useState(false);
 
   useEffect(() => {
     loadDrivers();
@@ -94,6 +95,49 @@ const Drivers = () => {
       full_name: ''
     });
     setEditingDriver(null);
+  };
+
+  const handleCreateMultipleDrivers = async () => {
+    setCreatingDrivers(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('No hay sesión activa');
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-drivers`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ count: 5 })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error al crear conductores');
+      }
+
+      toast.success(result.message, {
+        description: `Se crearon ${result.conductores.length} conductores`,
+      });
+
+      loadDrivers();
+      loadAvailableUsers();
+    } catch (error: any) {
+      toast.error('Error al crear conductores', {
+        description: error.message,
+      });
+    } finally {
+      setCreatingDrivers(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -212,14 +256,22 @@ const Drivers = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Conductores Registrados</CardTitle>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={resetForm}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nuevo Conductor
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleCreateMultipleDrivers}
+                  disabled={creatingDrivers}
+                  variant="outline"
+                >
+                  {creatingDrivers ? 'Creando...' : 'Crear 5 Conductores'}
+                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={resetForm}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Nuevo Conductor
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
                   <DialogHeader>
                     <DialogTitle>
                       {editingDriver ? 'Editar Conductor' : 'Nuevo Conductor'}
@@ -266,6 +318,7 @@ const Drivers = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+            </div>
             </div>
           </CardHeader>
           <CardContent>
